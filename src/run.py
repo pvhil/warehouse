@@ -24,7 +24,7 @@ chrome_options.add_argument('--disable-blink-features=AutomationControlled')
 chrome_options.add_argument('--disable-blink-features=AutomationControlled')
 chrome_options.add_experimental_option('useAutomationExtension', False)
 chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-chrome_options.add_argument("disable-infobars")   
+chrome_options.add_argument("disable-infobars")
 chrome_options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36')
 chrome_prefs = {}
 chrome_options.experimental_options["prefs"] = chrome_prefs
@@ -50,7 +50,7 @@ class warehousemonitor():
                     'cache-control': 'max-age=0',
                     'cookie': '',
                     'device-memory': "8",
-                    'downlink': "3.65",     
+                    'downlink': "3.65",
                     'dpr': "1.1",
                     'ect': "4g",
                     'rtt': "100",
@@ -101,8 +101,8 @@ class warehousemonitor():
                 price = re.sub('[^0-9,]', "", priceTag.find("span", {"class": "a-offscreen"}).text)
                 print(f"\U0001F3AE The price is {price}")
                 if (int(price.split(',', 1)[0])) > (self.maxprice+5):
-                    print(f"\U0001F6AB The Price is too high! Skipping...")
-                    continue 
+                    print("\U0001F6AB The Price is too high! Skipping...")
+                    continue
                 tdTags = tag.find_all("span", {"data-action": "aod-atc-action"})
                 for tag in tdTags:
                     f = json.loads(tag["data-aod-atc-action"])
@@ -116,7 +116,7 @@ class warehousemonitor():
 
             #monitordelay
             time.sleep(self.delay)
-                    
+
     def run(self,asin,proxy):
         if self.headless:
             chrome_options.add_argument("--headless")
@@ -161,8 +161,8 @@ class warehousemonitor():
                     embed.add_embed_field(name='Price', value=price)
                     embed.set_image(url=f"https://ws-eu.amazon-adsystem.com/widgets/q?_encoding=UTF8&MarketPlace=DE&ASIN={asin}&ServiceVersion=20070822&ID=AsinImage&WS=1&Format=AC_SL500")
                     webhook.add_embed(embed)
-                    response = webhook.execute()
-                except:
+                    webhook.execute()
+                except Exception:
                     print("\U0001F6AB Warning! The Discord Webhook is invalid. Could not send a Webhook.")
                 time.sleep(4)
             except Exception:
@@ -173,6 +173,8 @@ class warehousemonitor():
         browser.quit()
 
     def __init__(self) -> None:
+        """Start the program and initialize"""
+
         os.system("title pvhil's Warehouse Bot" if os.name=='nt' else 'clear')
         cls()
         print(r"""
