@@ -1,0 +1,33 @@
+name: Release ZipFile with PyInstaller
+
+on:
+  push:
+    branches: [ master ]
+    tags:
+    - '*'
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: PyInstaller Windows
+      uses: JackMcKew/pyinstaller-action-windows@main
+      with:
+        path: src
+
+    - uses: papeloto/action-zip@v1
+      with:
+        files: src/dist/windows
+        dest: warehouse.zip
+        
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ${{ github.workspace }}/warehouse.zip
+        tag_name: Release-${{ github.run_id }}
+        body: "- Fill in the config.yaml\n- Start run.exe\n\nChanges:\n ${{ github.event.head_commit.message }}"

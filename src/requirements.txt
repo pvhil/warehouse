@@ -1,0 +1,7 @@
+beautifulsoup4==4.11.1
+discord_webhook==0.15.0
+playsound==1.2.2
+pypresence==4.2.1
+PyYAML==6.0
+requests==2.27.1
+selenium==4.1.3
