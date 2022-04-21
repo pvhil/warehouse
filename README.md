@@ -22,3 +22,7 @@ Also my Amazon Ref Link will be used at the Checkout
 ## Pull Requests
 
 I would love to see some pull requests or issues regarding the Check-Out process because i do not know if the current way is the fastest :)
+
+## Disclaimer
+
+I take no responsibility of unwanted orders taken with this bot or banned Amazon Accounts. Please use this bot at your own risk!
