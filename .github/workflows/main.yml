@@ -1,4 +1,4 @@
-name: Release ZipFile with PyInstaller
+name: Release Zipfile with PyInstaller
 
 on:
   push:
