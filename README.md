@@ -1,5 +1,7 @@
 # phil's warehouse
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ef7c9b4f6af845d8a62f23dce1257208)](https://app.codacy.com/gh/pvhil/warehouse?utm_source=github.com&utm_medium=referral&utm_content=pvhil/warehouse&utm_campaign=Badge_Grade_Settings)
+
 Snipe amazon Warehouse deals!  
 You just need an amazon account and the product ASIN!  
 Proxies would help you monitoring :)
