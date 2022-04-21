@@ -174,7 +174,6 @@ class warehousemonitor():
 
     def __init__(self) -> None:
         """Start the program and initialize"""
-
         os.system("title pvhil's Warehouse Bot" if os.name=='nt' else 'clear')
         cls()
         print(r"""
@@ -187,7 +186,7 @@ class warehousemonitor():
         RPC = Presence(client_id="965260628925251675")
         RPC.connect()
         RPC.update(state="Hunting Deals..",buttons=[{"label": "Website", "url": "https://pvhil.me"}])
-        
+
         threads = []
         print("\U0001F44B Thanks for using the Warehouse bot. Loading the config.yaml file.")
         print("Note: Please use this programm with a static IP address\n")

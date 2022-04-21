@@ -8,9 +8,9 @@ Proxies would help you monitoring :)
   
 ## Usage
 
-- Download the newest Release  
-- Fill in the ```config.yaml```  
-- Run the programm with the run.exe file  
+- Download the newest Release
+- Fill in the ```config.yaml```
+- Run the programm with the run.exe file
 
 Have fun waiting!
 
