@@ -1,13 +1,13 @@
 # phil's warehouse
 
 Snipe amazon Warehouse deals!  
-You just need an amazon account and the product ASIN!
+You just need an amazon account and the product ASIN!  
+Proxies would help you monitoring :)
   
 ## Usage
-Fill in the ```config.yaml``` file.  
-Install all requirements with ```pip install -r requirements```  
-Run the programm with ```py run.py```  
+
+- Download the newest Release
+- Fill in the ```config.yaml```
+- Run the programm with the run.exe file
 
 Have fun waiting!
-
-
