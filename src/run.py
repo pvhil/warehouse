@@ -27,6 +27,7 @@ chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
 chrome_options.add_argument("disable-infobars")
 chrome_options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36')
 chrome_prefs = {}
+chrome_options.page_load_strategy = 'eager'
 chrome_options.experimental_options["prefs"] = chrome_prefs
 chrome_prefs["profile.default_content_settings"] = {"images": 2}
 chrome_prefs["profile.managed_default_content_settings"] = {"images": 2}
@@ -35,7 +36,6 @@ def cls():
         os.system('cls' if os.name=='nt' else 'clear')
 
 class warehousemonitor():
-
     def monitor(self,asin,proxy):
         # request monitor
         if proxy != "null":
@@ -113,7 +113,6 @@ class warehousemonitor():
                         pass
                     print(f"\U0001F3AE Checkout Link: https://www.amazon.de/gp/product/handle-buy-box/ref=dp_start-bbf_1_glance?ASIN={asin}&quantity.1=1&asin.1={asin}&quantity=1&submit.buy-now=1&tag=baba08b-21&offeringID={f['oid']}")
                     return f['oid'], price
-
             #monitordelay
             time.sleep(self.delay)
 
@@ -141,7 +140,7 @@ class warehousemonitor():
         oid, price = self.monitor(asin,proxy)
 
         url = f"https://www.amazon.de/gp/product/handle-buy-box/ref=dp_start-bbf_1_glance?ASIN={asin}&quantity.1=1&asin.1={asin}&quantity=1&submit.buy-now=1&tag=baba08b-21&offeringID={oid}"
-        while 1:
+        for x in range(10000):
             try:
                 browser.get(url)
                 checkout = browser.find_element(By.NAME, "placeYourOrder1")
