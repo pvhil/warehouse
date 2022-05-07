@@ -44,29 +44,27 @@ class warehousemonitor():
         while 1:
             print(f"\U0001F4A4 Monitoring {asin}...")
             headers = {
-                    'accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-                    'accept-encoding': 'gzip, deflate, br',
-                    'accept_language':'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
-                    'cache-control': 'max-age=0',
-                    'cookie': '',
-                    'device-memory': "8",
-                    'downlink': "3.65",
-                    'dpr': "1.1",
-                    'ect': "4g",
-                    'rtt': "100",
-                    'sec-ch-device-memory': "8",
-                    'sec-ch-dpr': "1.1",
-                    'sec-ch-ua':'" Not A;Brand";v="99", "Chromium";v="100", "Google Chrome";v="100"',
-                    'sec-ch-ua-mobile': "?0",
-                    'sec-ch-ua-platform': '"Windows"',
-                    "sec-ch-viewport-width": "1745",
-                    "sec-fetch-dest": "document",
-                    "sec-fetch-mode": "navigate",
-                    "sec-fetch-site": "none",
-                    "sec-fetch-user": "?1",
-                    "upgrade-insecure-requests": "1",
-                    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36",
-                    "viewport-width": "1745"
+                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                "accept-language": "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7",
+                "cache-control": "max-age=0",
+                "device-memory": "8",
+                "downlink": "10",
+                "dpr": "1",
+                "ect": "4g",
+                "rtt": "50",
+                "sec-ch-device-memory": "8",
+                "sec-ch-dpr": "1",
+                "sec-ch-ua": "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"101\", \"Google Chrome\";v=\"101\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-ch-ua-platform": "\"Windows\"",
+                "sec-ch-viewport-width": "1920",
+                "sec-fetch-dest": "document",
+                "sec-fetch-mode": "navigate",
+                "sec-fetch-site": "none",
+                "sec-fetch-user": "?1",
+                "upgrade-insecure-requests": "1",
+                "viewport-width": "1920",
+                "cookie": ""
             }
             try:
                 if proxy == "null":
@@ -89,14 +87,15 @@ class warehousemonitor():
                     print("\U0001F6AB Blocked Monitor Request. Waiting extra 30s..")
                     time.sleep(30)
                 else:
-                    print("\U0001F6AB Blocked Monitor Request. Waiting extra 10s..")
-                    time.sleep(10)
+                    print("\U0001F6AB Blocked Monitor Request. Retrying...")
             for tag in element:
                 temp = tag.find("div", {"id":"aod-offer-soldBy"})
                 seller = temp.find("a", {"class":"a-size-small a-link-normal"})
                 if (seller.text).replace(" ","") != "AmazonWarehouse":
                     continue
                 print(f"\U0001F3AE Found offer from {seller.text}")
+                quality = tag.find("span",{"class":"expandable-expanded-text"}).text
+                print("\U0001F3AE The Quality Description is: "+quality)
                 priceTag = tag.find("div", {"id":"aod-offer-price"})
                 price = re.sub('[^0-9,]', "", priceTag.find("span", {"class": "a-offscreen"}).text)
                 print(f"\U0001F3AE The price is {price}")
@@ -112,7 +111,7 @@ class warehousemonitor():
                     except Exception:
                         pass
                     print(f"\U0001F3AE Checkout Link: https://www.amazon.de/gp/product/handle-buy-box/ref=dp_start-bbf_1_glance?ASIN={asin}&quantity.1=1&asin.1={asin}&quantity=1&submit.buy-now=1&tag=baba08b-21&offeringID={f['oid']}")
-                    return f['oid'], price
+                    return f['oid'], price , quality
             #monitordelay
             time.sleep(self.delay)
 
@@ -137,7 +136,7 @@ class warehousemonitor():
         print(f"\U0001F511 Logged into your account. Please make sure you have OneClick activated in your amazon account! ({asin})")
 
         # waiting for monitor
-        oid, price = self.monitor(asin,proxy)
+        oid, price, quality = self.monitor(asin,proxy)
 
         url = f"https://www.amazon.de/gp/product/handle-buy-box/ref=dp_start-bbf_1_glance?ASIN={asin}&quantity.1=1&asin.1={asin}&quantity=1&submit.buy-now=1&tag=baba08b-21&offeringID={oid}"
         for x in range(10000):
@@ -151,13 +150,15 @@ class warehousemonitor():
                 except Exception:
                     pass
                 try:
-                    webhook = DiscordWebhook(url=self.webhookurl, username="Phils Warehouse", timeout=3)
+                    webhook = DiscordWebhook(url=self.webhookurl, username="Phils Warehouse",content=f"<@{self.discordname}>", timeout=3)
                     embed = DiscordEmbed(title='Potentially sniped a Warehouse Deal!', color='55ff00',description='Managed to click "buy" at the Checkout Screen!\nIt does not mean it was successful, so look at your mails!\nInfo: Bot still tries to buy for safety.')
-                    embed.set_footer(text='Made by pvhil')
+                    embed.set_footer(text='Made by pvhil | Ver 1.0.0')
                     embed.set_timestamp()
+                    embed.add_embed_field(name='Account', value=self.email)
                     embed.add_embed_field(name='ASIN', value=asin)
-                    embed.add_embed_field(name='OfferID', value=oid)
+                    embed.add_embed_field(name='OfferID', value=oid,inline=False)
                     embed.add_embed_field(name='Price', value=price)
+                    embed.add_embed_field(name="Quality",value=quality)
                     embed.set_image(url=f"https://ws-eu.amazon-adsystem.com/widgets/q?_encoding=UTF8&MarketPlace=DE&ASIN={asin}&ServiceVersion=20070822&ID=AsinImage&WS=1&Format=AC_SL500")
                     webhook.add_embed(embed)
                     webhook.execute()
@@ -182,12 +183,15 @@ class warehousemonitor():
     | |/ |/ / /_/ / /  /  __/ / / / /_/ / /_/ (__  )  __/
     |__/|__/\__,_/_/   \___/_/ /_/\____/\__,_/____/\___/ 
         """)
-        RPC = Presence(client_id="965260628925251675")
-        RPC.connect()
-        RPC.update(state="Hunting Deals..",buttons=[{"label": "Website", "url": "https://pvhil.me"}])
+        try:
+            RPC = Presence(client_id="965260628925251675")
+            RPC.connect()
+            RPC.update(state="Hunting Deals..",buttons=[{"label": "Website", "url": "https://pvhil.me"}])
+        except:
+            pass
 
         threads = []
-        print("\U0001F44B Thanks for using the Warehouse bot. Loading the config.yaml file.")
+        print("\U0001F44B Thanks for using the Warehouse bot (Ver. 1.0.0). Loading the config.yaml file.")
         print("Note: Please use this programm with a static IP address\n")
         print("\U0001F310 Please visit my website: https://pvhil.me\n")
         time.sleep(1)
@@ -201,6 +205,7 @@ class warehousemonitor():
         self.maxprice = config["maxprice"]
         self.delay = config["monitordelay"]
         self.webhookurl =config["webhook"]
+        self.discordname = config["discord"]
 
         asins = config["asins"]
         proxies = config["proxy"]

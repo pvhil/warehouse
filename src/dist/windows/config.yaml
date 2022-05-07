@@ -1,9 +1,9 @@
 # Amazon account
 email: "email"
-password: "pass"
+password: "password"
 
 # product ASINS (one asin = one task)
-asins: ["B08GYKNCCP"]
+asins: ["",""]
 
 # delay for the monitor in seconds
 monitordelay: 5
@@ -12,10 +12,13 @@ monitordelay: 5
 proxy : []
 
 #price limits
-maxprice: 500
+maxprice: 1000
 
 # discord webhook for success
-webhook: "webhook"
+webhook: "none"
+
+#discord ID for ping
+discord: "missingid"
 
 #headless option (True / False) (leave browser open)
 headless: True

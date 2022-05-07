@@ -8,3 +8,4 @@ config.yaml.bak
 text.py
 src/build
 src/__pycache__
+/linux
