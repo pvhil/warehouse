@@ -124,7 +124,7 @@ class warehousemonitor():
         while 1:
             if self.headless:
                 chrome_options.add_argument("--headless")
-            browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=chrome_options)
+            browser = webdriver.Chrome(service=self.service,options=chrome_options)
             cls()
             browser.get("https://www.amazon.de/ap/signin?openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.de%2Fgp%2Fcss%2Fyour-account-access%2Fref%3Dnav_signin&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.assoc_handle=deflex&openid.mode=checkid_setup&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&")
             print(f"\U0001F511 Logging in... ({asin})")
@@ -217,6 +217,7 @@ class warehousemonitor():
 
         asins = config["asins"]
         proxies = config["proxy"]
+        self.service = Service(executable_path=ChromeDriverManager().install())
 
         if self.email == "email":
             print("\U0001F6AB Error. Invalid Credentials! Please fill in the config.yaml!")
