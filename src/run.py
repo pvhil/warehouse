@@ -13,6 +13,8 @@ import re
 import os
 from pypresence import Presence
 from playsound import playsound
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument('log-level=3')
@@ -41,6 +43,7 @@ class warehousemonitor():
         if proxy != "null":
             print(f"\U0001F7EB Info: Using proxy '{proxy}' for '{asin}'")
             pp = proxy.split(":")
+        s = requests.session()
         while 1:
             print(f"\U0001F4A4 Monitoring {asin}...")
             headers = {
@@ -64,19 +67,19 @@ class warehousemonitor():
                 "sec-fetch-user": "?1",
                 "upgrade-insecure-requests": "1",
                 "viewport-width": "1920",
-                "cookie": ""
             }
             try:
                 if proxy == "null":
-                    x = requests.get(f'http://www.amazon.de/gp/product/ajax/ref=dp_aod_unknown_mbc?asin={asin}&m=&qid=&smid=&sourcecustomerorglistid=&sourcecustomerorglistitemid=&sr=&pc=dp&experienceId=aodAjaxMain', headers=headers, timeout=8)
+                    x = s.get(f'http://www.amazon.de/gp/product/ajax/ref=dp_aod_unknown_mbc?asin={asin}&m=&qid=&smid=&sourcecustomerorglistid=&sourcecustomerorglistitemid=&sr=&pc=dp&experienceId=aodAjaxMain', headers=headers, timeout=8)
                 else:
                     proxies = {
                         "http": f"http://{pp[2]}:{pp[3]}@{pp[0]}:{pp[1]}",
                         "https": f"http://{pp[2]}:{pp[3]}@{pp[0]}:{pp[1]}"
                     }
-                    x = requests.get(f'http://www.amazon.de/gp/product/ajax/ref=dp_aod_unknown_mbc?asin={asin}&m=&qid=&smid=&sourcecustomerorglistid=&sourcecustomerorglistitemid=&sr=&pc=dp&experienceId=aodAjaxMain', headers=headers, proxies=proxies, timeout=8)
+                    x = s.get(f'http://www.amazon.de/gp/product/ajax/ref=dp_aod_unknown_mbc?asin={asin}&m=&qid=&smid=&sourcecustomerorglistid=&sourcecustomerorglistitemid=&sr=&pc=dp&experienceId=aodAjaxMain', headers=headers, proxies=proxies, timeout=8)
             except Exception:
                 print(f"Temporary Proxy Error. (Timeout or invalid proxy) Continuing... ({asin})")
+                s = requests.session()
                 continue
 
             html = x.text
@@ -86,8 +89,10 @@ class warehousemonitor():
                 if proxy == "null":
                     print("\U0001F6AB Blocked Monitor Request. Waiting extra 30s..")
                     time.sleep(30)
+                    s = requests.session()
                 else:
                     print("\U0001F6AB Blocked Monitor Request. Retrying...")
+                    s = requests.session()
             for tag in element:
                 temp = tag.find("div", {"id":"aod-offer-soldBy"})
                 seller = temp.find("a", {"class":"a-size-small a-link-normal"})
@@ -116,61 +121,64 @@ class warehousemonitor():
             time.sleep(self.delay)
 
     def run(self,asin,proxy):
-        if self.headless:
-            chrome_options.add_argument("--headless")
-        browser = webdriver.Chrome(executable_path="util/chromedriver.exe",options=chrome_options)
-        cls()
-        browser.get("https://www.amazon.de/ap/signin?openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.de%2Fgp%2Fcss%2Fyour-account-access%2Fref%3Dnav_signin&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.assoc_handle=deflex&openid.mode=checkid_setup&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&")
-        print(f"\U0001F511 Logging in... ({asin})")
-        try:
-            WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.NAME, "email"))).send_keys(self.email)
-            WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.ID, "continue"))).click()
-            WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.NAME, "password"))).send_keys(self.password)
-            WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.NAME, "rememberMe"))).click()
-            time.sleep(1)
-            browser.find_element(by=By.ID,value="signInSubmit").click()
-        except Exception:
-            print("\U0001F6AB Error. Invalid Credentials! Please fill in the config.yaml!")
-            time.sleep(5)
-            return
-        print(f"\U0001F511 Logged into your account. Please make sure you have OneClick activated in your amazon account! ({asin})")
-
-        # waiting for monitor
-        oid, price, quality = self.monitor(asin,proxy)
-
-        url = f"https://www.amazon.de/gp/product/handle-buy-box/ref=dp_start-bbf_1_glance?ASIN={asin}&quantity.1=1&asin.1={asin}&quantity=1&submit.buy-now=1&tag=baba08b-21&offeringID={oid}"
-        for x in range(10000):
+        while 1:
+            if self.headless:
+                chrome_options.add_argument("--headless")
+            browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=chrome_options)
+            cls()
+            browser.get("https://www.amazon.de/ap/signin?openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.de%2Fgp%2Fcss%2Fyour-account-access%2Fref%3Dnav_signin&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.assoc_handle=deflex&openid.mode=checkid_setup&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&")
+            print(f"\U0001F511 Logging in... ({asin})")
             try:
-                browser.get(url)
-                checkout = browser.find_element(By.NAME, "placeYourOrder1")
-                checkout.click()
-                print("\U0001F4B0 Potentially bought the product! Check your Mails! Still trying to buy for safety...")
-                try:
-                    playsound(os.path.dirname(__file__)+'\\util\\cash.mp3',block=False)
-                except Exception:
-                    pass
-                try:
-                    webhook = DiscordWebhook(url=self.webhookurl, username="Phils Warehouse",content=f"<@{self.discordname}>", timeout=3)
-                    embed = DiscordEmbed(title='Potentially sniped a Warehouse Deal!', color='55ff00',description='Managed to click "buy" at the Checkout Screen!\nIt does not mean it was successful, so look at your mails!\nInfo: Bot still tries to buy for safety.')
-                    embed.set_footer(text='Made by pvhil | Ver 1.0.0')
-                    embed.set_timestamp()
-                    embed.add_embed_field(name='Account', value=self.email)
-                    embed.add_embed_field(name='ASIN', value=asin)
-                    embed.add_embed_field(name='OfferID', value=oid,inline=False)
-                    embed.add_embed_field(name='Price', value=price)
-                    embed.add_embed_field(name="Quality",value=quality)
-                    embed.set_image(url=f"https://ws-eu.amazon-adsystem.com/widgets/q?_encoding=UTF8&MarketPlace=DE&ASIN={asin}&ServiceVersion=20070822&ID=AsinImage&WS=1&Format=AC_SL500")
-                    webhook.add_embed(embed)
-                    webhook.execute()
-                except Exception:
-                    print("\U0001F6AB Warning! The Discord Webhook is invalid. Could not send a Webhook.")
-                time.sleep(4)
+                WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.NAME, "email"))).send_keys(self.email)
+                WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.ID, "continue"))).click()
+                WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.NAME, "password"))).send_keys(self.password)
+                WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.NAME, "rememberMe"))).click()
+                time.sleep(1)
+                browser.find_element(by=By.ID,value="signInSubmit").click()
             except Exception:
-                print(f"\U0001F6AB Failed the checkout! Retrying... ({asin})")
-                time.sleep(0.2)
+                print("\U0001F6AB Error. Invalid Credentials! Please fill in the config.yaml!")
+                time.sleep(5)
+                return
+            print(f"\U0001F511 Logged into your account. ({asin})")
 
-        time.sleep(15)
-        browser.quit()
+            # waiting for monitor
+            oid, price, quality = self.monitor(asin,proxy)
+
+            url = f"https://www.amazon.de/gp/product/handle-buy-box/ref=dp_start-bbf_1_glance?ASIN={asin}&quantity.1=1&asin.1={asin}&quantity=1&submit.buy-now=1&tag=baba08b-21&offeringID={oid}"
+            for x in range(10000):
+                try:
+                    browser.get(url)
+                    checkout = browser.find_element(By.NAME, "placeYourOrder1")
+                    checkout.click()
+                    print("\U0001F4B0 Potentially bought the product! Check your Mails! Still trying to buy for safety...")
+                    try:
+                        playsound(os.path.dirname(__file__)+'\\util\\cash.mp3',block=False)
+                    except Exception:
+                        pass
+                    try:
+                        webhook = DiscordWebhook(url=self.webhookurl, username="Phils Warehouse",content=f"<@{self.discordname}>", timeout=3)
+                        embed = DiscordEmbed(title='Potentially sniped a Warehouse Deal!', color='55ff00',description='Managed to click "buy" at the Checkout Screen!\nIt does not mean it was successful, so look at your mails!\nInfo: Bot still tries to buy for safety.')
+                        embed.set_footer(text='Made by pvhil | Ver 1.0.0')
+                        embed.set_timestamp()
+                        embed.add_embed_field(name='Account', value=self.email)
+                        embed.add_embed_field(name='ASIN', value=asin)
+                        embed.add_embed_field(name='OfferID', value=oid,inline=False)
+                        embed.add_embed_field(name='Price', value=price)
+                        embed.add_embed_field(name="Quality",value=quality)
+                        embed.set_image(url=f"https://ws-eu.amazon-adsystem.com/widgets/q?_encoding=UTF8&MarketPlace=DE&ASIN={asin}&ServiceVersion=20070822&ID=AsinImage&WS=1&Format=AC_SL500")
+                        webhook.add_embed(embed)
+                        webhook.execute()
+                    except Exception:
+                        print("\U0001F6AB Warning! The Discord Webhook is invalid. Could not send a Webhook.")
+                    time.sleep(4)
+                except Exception:
+                    print(f"\U0001F6AB Failed the checkout! Retrying... ({asin})")
+                    time.sleep(0.2)
+
+            print(f"\U0001F3AE Restarting the Task with the ASIN {asin} to hopefully buy more :))")
+            time.sleep(10)
+            browser.quit()
+            time.sleep(5)
 
     def __init__(self) -> None:
         """Start the program and initialize"""
